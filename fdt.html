@@ -93,7 +93,7 @@
             function mul(u, v) { return { x: u.x * v, y: u.y * v, z: u.z * v } }
             function normalize(u) { return mul(u, f = 1. / Math.sqrt(dot(u, u))) }
 
-            function drawPath(pts) {
+            function drawPath(pts, title) {
                 addPathToView(face, pts.map(p => { return { x: p.x, y: p.y } }));
                 addPathToView(dessus, pts.map(p => { return { x: p.x, y: p.z } }));
                 addPathToView(gauche, pts.map(p => { return { x: p.z, y: p.y } }));
@@ -105,16 +105,19 @@
                 let path_element = pathElem(projected_points);
                 let g = appendGroup(eclatee);
                 g.appendChild(path_element);
-                addCotesToView(g, path_element.getBBox(), projected_points);
+                let bb = path_element.getBBox()
+                addCotesToView(g, bb, projected_points);
+                if (title)
+                    g.appendChild(text(bb.x + bb.width / 2, bb.y + bb.height / 2, title, "middle"))
             }
 
             function drawRectangles(rs) {
-                const corners = [{ x: "xl", y: "yl" }, { x: "xl", y: "yh" }, { x: "xh", y: "yh" }, { x: "xh", y: "yl" }, { x: "xl", y: "yl" }]
+                const corners = [{ x: "xl", y: "yl", t: "gauche" }, { x: "xl", y: "yh", t: "bas" }, { x: "xh", y: "yh", t: "droite" }, { x: "xh", y: "yl", t: "haut" }, { x: "xl", y: "yl" }]
                 for (let ci = 0; ci < corners.length - 1; ci++) {
                     for (let ri = 0; ri < rs.length - 1; ri++) {
                         let c1 = corners[ci], c2 = corners[ci + 1], r1 = rs[ri], r2 = rs[ri + 1];
                         drawPath([{ x: r1[c2.x], y: r1[c2.y], z: r1.z }, { x: r1[c1.x], y: r1[c1.y], z: r1.z },
-                        { x: r2[c1.x], y: r2[c1.y], z: r2.z }, { x: r2[c2.x], y: r2[c2.y], z: r2.z }])
+                        { x: r2[c1.x], y: r2[c1.y], z: r2.z }, { x: r2[c2.x], y: r2[c2.y], z: r2.z }], c1.t)
                     }
                 }
             }
@@ -138,7 +141,7 @@
             document.querySelector("#dessus").setAttribute("transform", `translate(${-fbb.x} ${fbb.height - dbb.y + margin})`)
             let gbb = gauche.getBBox();
             document.querySelector("#gauche").setAttribute("transform", `translate(${fbb.width + margin - gbb.x} ${-fbb.y})`)
-            let ym = fbb.height - dbb.y + margin + dbb.height + margin;
+            let ym = fbb.height - dbb.y + margin + dbb.height + margin * 2;
             for (let e of eclatee.childNodes) {
                 let bb = e.getBBox()
                 e.setAttribute("transform", `translate(${- bb.x} ${- bb.y + ym})`);
@@ -155,19 +158,19 @@
         <label for="cadre_v">Hauteur cadre:</label>
         <input type="text" id="cadre_v" name="cadre_v" value="980" onkeyup="draw()"><br>
         <label for="cadre_h">Largeur cadre:</label>
-        <input type="text" id="cadre_h" name="cadre_h" value="780"><br>
+        <input type="text" id="cadre_h" name="cadre_h" value="780" onkeyup="draw()"><br>
         <label for="epaisseur_chevron">Epaisseur chevron:</label>
-        <input type="text" id="epaisseur_chevron" name="epaisseur_chevron" value="60"><br>
+        <input type="text" id="epaisseur_chevron" name="epaisseur_chevron" value="60" onkeyup="draw()"><br>
         <label for="epaisseur_chevron">Epaisseur totale:</label>
-        <input type="text" id="epaisseur_totale" name="epaisseur_totale" value="220"><br>
+        <input type="text" id="epaisseur_totale" name="epaisseur_totale" value="220" onkeyup="draw()"><br>
         <label for="angle_haut">Angle haut:</label>
-        <input type="text" id="angle_haut" name="angle_haut" value="45"><br>
+        <input type="text" id="angle_haut" name="angle_haut" value="70" onkeyup="draw()"><br>
         <label for="angle_bas">Angle bas:</label>
-        <input type="text" id="angle_bas" name="angle_bas" value="45"><br>
+        <input type="text" id="angle_bas" name="angle_bas" value="10" onkeyup="draw()"><br>
         <label for="angle_droite">Angle gauche:</label>
-        <input type="text" id="angle_droite" name="angle_droite" value="45"><br>
+        <input type="text" id="angle_droite" name="angle_droite" value="30" onkeyup="draw()"><br>
         <label for="angle_gauche">Angle droite:</label>
-        <input type="text" id="angle_gauche" name="angle_gauche" value="45"><br>
+        <input type="text" id="angle_gauche" name="angle_gauche" value="30" onkeyup="draw()"><br>
     </form>
     <svg id="svg" width="800" height="2400" id="plan" transform="translate(10,10)">
         <g id="face">
